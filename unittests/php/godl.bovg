@@ -1,0 +1,121 @@
+<!--
+GO(bject) D(efinition) L(anguage) Grammar to be used in unit testing
+-->
+
+line-comment-style '\/\/';
+block-comment-style '\/*' '*\/';
+
+word ID '[a-zA-Z_][a-zA-Z_0-9]*';
+separator BRACE_OPEN '{';
+separator BRACE_CLOSE '}';
+separator PAR_OPEN '(';
+separator PAR_CLOSE ')';
+separator PACKAGE_SEP '::'; <!-- { whitespace-allowed: FALSE } -->
+separator SEMICOLON ';';
+separator COLON ':';
+separator COMMA ',';
+
+literal LITERAL;
+
+@grammar
+godl = (
+	include | 
+	package |
+	gobject |
+	ginterface
+	)*;
+	
+include =
+	'include' file_path=LITERAL SEMICOLON
+	;
+
+package = 
+	'package' ID BRACE_OPEN package_content* BRACE_CLOSE
+	;
+
+package_content = 
+	package |
+	gobject |
+	ginterface
+	;
+	
+gobject = 
+	'gobject' name=ID BRACE_OPEN gobject_content* BRACE_CLOSE
+	;
+
+ginterface = 
+	'ginterface' name=ID BRACE_OPEN ginterface_content* BRACE_CLOSE
+	;
+	
+gobject_content =
+	super |
+	prefix |
+	implements |
+	constructor | 
+	method |
+	attribute |
+	property |
+	signal
+	;
+
+ginterface_content = 
+	method
+	;
+
+super = 
+	'super' super_class=type_name SEMICOLON
+	;
+
+prefix =
+	'prefix' prefix=ID SEMICOLON
+	;
+	
+implements = 
+	'implements' interface=type_name ( COMMA interface=type_name )* SEMICOLON
+	;
+	
+type_name = 
+	PACKAGE_SEP? ( package=ID PACKAGE_SEP )* ID
+	;
+	
+type_arg = 
+	type_name |
+	(ref='ref'|list='list') PAR_OPEN type_arg PAR_CLOSE
+	;
+	
+constructor = 
+	( 'constructor' | className=ID ) BRACE_OPEN constructor_content* BRACE_CLOSE
+	;
+	
+constructor_content = 
+	method_content
+	;
+	
+method = 
+	'method' name=ID BRACE_OPEN method_content* BRACE_CLOSE
+	;
+	
+method_content = 
+	'result' BRACE_OPEN type_prop BRACE_CLOSE |
+	'parameter' name=ID BRACE_OPEN type_prop param_props* BRACE_CLOSE
+	;
+	
+type_prop = 
+	'type' COLON type_arg SEMICOLON
+	;
+	
+param_props =
+	'modifiers' COLON 'const' SEMICOLON
+	;
+	
+attribute =
+	'attribute' name=ID BRACE_OPEN BRACE_CLOSE
+	;
+	
+property =
+	'property' name=ID BRACE_OPEN BRACE_CLOSE
+	;
+	
+signal =
+	'signal' name=ID BRACE_OPEN BRACE_CLOSE
+	;

@@ -1,0 +1,117 @@
+#! /usr/bin/env python3
+#! coding=UTF-8
+
+# Copyright 2012 Thomas Bollmeier <tbollmeier@web.de>
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#   http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+Create a parser module from file input
+"""
+
+import sys
+from optparse import OptionParser
+import bovinus 
+from bovinus.parsergen.meta_parser import MetaParser
+from bovinus.parsergen.output import StdOut, FileOut, CodeWriter
+from bovinus.parsergen.python_codegen import PythonCodeGenerator
+from bovinus.parsergen.js_codegen import JSCodeGenerator
+from bovinus.parsergen.php_codegen import PHPCodeGenerator
+from bovinus.parsergen.code_section_splitter import CodeSectionSplitter
+
+def create_option_parser():
+    
+    res = OptionParser(usage = "usage: %prog [options] <grammar_file>", 
+                       version = "%%prog, Version: %s, Author: Thomas Bollmeier" % bovinus.VERSION
+                       )
+    
+    res.add_option("-o", "--output",
+                   dest = "parser_file",
+                   default = "",
+                   metavar = "PARSER_FILE",
+                   help = "write generated parser code to PARSER_FILE"
+                   )
+
+    res.add_option("-t", "--target",
+                   dest = "target_language",
+                   default = "python",
+                   metavar = "TARGET_LANG",
+                   help = "generate in language TARGET_LANG [possible values: python(default), javascript, php]"
+                   )
+
+    res.add_option("", "--header-comment",
+                   dest = "header_comment",
+                   default = "",
+                   metavar = "HEADER_COMMENT_FILE",
+                   help = "add content of HEADER_COMMENT_FILE as header comment to the generated code"
+                   )
+    
+    res.add_option("", "--prefix-php",
+                   dest = "prefix_php",
+                   default = "",
+                   metavar = "PREFIX",
+                   help = "set prefix of generated PHP objects to PREFIX"
+                   )
+    
+    return res
+
+options, args = create_option_parser().parse_args()
+
+if not args:
+    print("Invalid syntax. Call '%s --help' for further information" % sys.argv[0])
+    exit(1)
+    
+grammar_file = args[0]
+
+if options.target_language == "python":
+    generator = PythonCodeGenerator()
+elif options.target_language == "javascript":
+    generator = JSCodeGenerator()
+elif options.target_language == "php":
+    generator = PHPCodeGenerator(prefix=options.prefix_php)
+else:
+    print("Target language '%s' is not supported" % options.target_language)
+    exit(1)
+    
+comment_lines = []
+if options.header_comment:
+    f = open(options.header_comment, "r")
+    comment_lines = [line.rstrip() for line in f.readlines()]
+    f.close()
+
+# Separate embedded code sections in grammar file from grammar content:
+section_splitter = CodeSectionSplitter()
+grammar_string, code_sections = section_splitter.split_grammar_file(grammar_file)
+
+symbols = MetaParser().compile_string(grammar_string)
+
+if options.parser_file:
+    # Keep editable sections:
+    generator.init_editable_sections(options.parser_file)
+    output = FileOut(options.parser_file)
+    output.open_file()
+else:
+    output = StdOut()
+
+if code_sections:
+    generator.set_editable_sections(code_sections)
+    
+if comment_lines:
+    generator.set_header_comment(comment_lines)
+
+CodeWriter(symbols, generator).write(output)
+
+if options.parser_file:
+    output.close_file()
+    
+exit(0)

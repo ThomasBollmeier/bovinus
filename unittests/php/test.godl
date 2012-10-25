@@ -1,0 +1,30 @@
+/*
+
+Test of GO(bject) D(efinition) L(anguage)
+
+*/
+
+ginterface Maker {
+
+	method do_something { }
+
+}
+
+package demo {
+	
+	gobject Person {
+
+		implements ::Maker;
+
+		Person {
+			parameter name { type: string; }
+		}
+
+		method getName {
+			result { type: string; }
+		}
+
+
+	}
+
+}
