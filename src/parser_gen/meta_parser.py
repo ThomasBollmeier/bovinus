@@ -34,20 +34,17 @@ class MetaParser(object):
     def compile_string(self, content):
         
         self.parse_string(content)
-        self.analyze()
         
-        return Symbols(self._symbols,
-                       self._token_types, 
-                       self._line_comment,
-                       self._block_comment,
-                       {
-                        "full-backtracking" : self._full_backtracking 
-                        }
-                       )
+        return self._create_symbols()
         
     def compile_file(self, file_path):
         
         self.parse_file(file_path)
+        
+        return self._create_symbols()
+        
+    def _create_symbols(self):
+        
         self.analyze()
         
         return Symbols(self._symbols,
@@ -282,10 +279,11 @@ class _AnalyseStep1(Visitor):
 
     def visit_word(self, 
                    word_id, 
-                   pattern
+                   pattern,
+                   filter_callback
                    ):
         
-        obj = meta_obj.create_word(word_id, pattern)
+        obj = meta_obj.create_word(word_id, pattern, filter_callback)
         self._symbols[word_id] = obj
         self._analyzer._token_types.append(obj)
     

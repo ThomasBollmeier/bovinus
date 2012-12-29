@@ -81,6 +81,7 @@ IS_PATTERN = register_keyword("is-pattern")
 CASE_SENSITIVE = register_keyword("case-sensitive")
 ESCAPE = register_keyword("escape")
 WS_ALLOWED = register_keyword("whitespace-allowed")
+FILTER_CB = register_keyword("filter-callback")
 
 RULE_ID = register_token_type(Word("[a-z_]([a-zA-Z0-9_])*"))
 GRAMMAR_ANNOTATION = register_keyword("@grammar")
@@ -160,8 +161,17 @@ def _props_expand(start, end, context):
     .connect(tn(BRACE_OPEN))\
     .connect(start_)
     
+    is_flag = True
+    
     if tt == KEYWORD:
         start_.connect(tn(CASE_SENSITIVE, 'case-sensitive')).connect(hlp)
+    elif tt == WORD:
+        is_flag = False
+        start_\
+        .connect(tn(FILTER_CB, 'filter-callback'))\
+        .connect(tn(COLON))\
+        .connect(tn(ID, 'filter-callback-name'))\
+        .connect(prop_end)
     elif tt == PREFIX:
         start_.connect(tn(ESCAPE, 'escape')).connect(hlp)
     elif tt == POSTFIX:
@@ -173,15 +183,17 @@ def _props_expand(start, end, context):
     else:
         raise Exception("Unknown property target")
     
-    hlp\
-    .connect(tn(COLON))\
-    .connect(tn(TRUE, 'true'))\
-    .connect(prop_end)
+    if is_flag:
     
-    hlp\
-    .connect(tn(COLON))\
-    .connect(tn(FALSE, 'false'))\
-    .connect(prop_end)
+        hlp\
+        .connect(tn(COLON))\
+        .connect(tn(TRUE, 'true'))\
+        .connect(prop_end)
+    
+        hlp\
+        .connect(tn(COLON))\
+        .connect(tn(FALSE, 'false'))\
+        .connect(prop_end)
     
     prop_end.connect(tn(COMMA)).connect(start_)
     prop_end.connect(end_)
@@ -198,13 +210,16 @@ def _props_transform(astNode):
     children = astNode.getChildren()
     for idx, child in enumerate(children):
         id_ = child.getId() 
-        if id_ in ['true', 'false']:
-            if id_ == 'true':
-                value = 'yes'
-            else:
-                value = 'no'
-            name = children[idx-2].getId()
-            res.add_property(name, value)
+        try:
+            value = {
+                     'true': 'yes',
+                     'false': 'no',
+                     'filter-callback-name': child.getText()
+                     }[id_]
+        except KeyError:
+            continue
+        name = children[idx-2].getId()
+        res.add_property(name, value)
             
     return res
 
@@ -238,7 +253,7 @@ class _TokenRule(Rule):
         if not self._token_type == LITERAL:
             end_ = end_.connect(tn(TOKEN_VALUE, "value"))
         
-        if self._token_type in [KEYWORD, PREFIX, POSTFIX, SEPARATOR]:
+        if self._token_type in [KEYWORD, WORD, PREFIX, POSTFIX, SEPARATOR]:
             end_.connect(_PropsRule('properties')).connect(end)
         
         end_.connect(tn(SEMICOLON)).connect(end)
@@ -261,7 +276,7 @@ class _TokenRule(Rule):
         if self._token_type == KEYWORD:
             res = KeywordNode(token_id, value, propertiesNode)
         elif self._token_type == WORD:
-            res = WordNode(token_id, value)
+            res = WordNode(token_id, value, propertiesNode)
         elif self._token_type == PREFIX:
             res = PrefixNode(token_id, value, propertiesNode)
         elif self._token_type == POSTFIX:

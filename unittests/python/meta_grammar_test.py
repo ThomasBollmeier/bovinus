@@ -43,6 +43,7 @@ postfix DECREMENT '--' { escape: TRUE }
 separator DOT '.' { whitespace-allowed: FALSE, is-pattern: FALSE } # <-- some properties
 literal LIT; # <-- has no properties
 separator MODULE_SEP '::' { whitespace-allowed: FALSE }
+word BOOL_FUNCNAME '[a-zA-Z_][a-zA-Z0-9_]*' { filter-callback: filter_keywords }  
 
 type_name = 
     ( module=ID MODULE_SEP )* base=ID
@@ -56,6 +57,9 @@ for_loop =
         self._parser.parse_string(code)
         
         self.assertIsNotNone(self._parser._ast)
+        
+        if self._parser._ast:
+            print(self._parser._ast.toXml())
            
     def testGrammarFile(self):
         

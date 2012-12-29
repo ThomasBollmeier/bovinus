@@ -97,24 +97,36 @@ class TokenType(object):
 
 class Word(TokenType):
 
-    def __init__(self, pattern):
+    def __init__(self, pattern, filterCallback=None):
 
         TokenType.__init__(self)
 
         self._regex = re.compile(r"\A(%s)\Z" % pattern)
         self._len = len(pattern)
+        self._filterCb = filterCallback
 
     def createToken(self, text):
         
         match = self._regex.match(text)
         if match:
+            if self._filterCb and not self._filterCb(text):
+                return None
             return Token(match.group(1), [self])
         else:
             return None
 
     def matches(self, text):
 
-        return bool(self._regex.match(text))
+        if self._regex.match(text):
+            if self._filterCb and not self._filterCb(text):
+                return False
+            return True
+        else:
+            return False
+        
+    def setFilterCallback(self, filterCallback):
+        
+        self._filterCb = filterCallback
 
 class Keyword(TokenType):
 

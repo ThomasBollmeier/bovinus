@@ -25,10 +25,14 @@ def create_keyword(token_id,
     return res
 
 def create_word(token_id, 
-                text
+                text,
+                filter_callback
                 ):
     
-    return TokenType(TokenType.WORD, token_id, text)
+    res = TokenType(TokenType.WORD, token_id, text)
+    res.filter_callback = filter_callback
+    
+    return res
 
 def create_separator(token_id, 
                      text, 

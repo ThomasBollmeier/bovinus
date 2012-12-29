@@ -98,7 +98,10 @@ class PythonCodeGenerator(AbstractCodeGenerator):
             line = "%s = token.Keyword('%s', caseSensitive=%s)" % (ttype.token_id, ttype.text, ttype.case_sensitive)
             self._add(res, line) 
         elif ttype.token_type == TokenType.WORD:
-            line = "%s = token.Word('%s')" % (ttype.token_id, ttype.text)
+            if not ttype.filter_callback:
+                line = "%s = token.Word('%s')" % (ttype.token_id, ttype.text)
+            else:
+                line = "%s = token.Word('%s', filterCallback=%s)" % (ttype.token_id, ttype.text, ttype.filter_callback)
             self._add(res, line)
         elif ttype.token_type == TokenType.PREFIX:
             line = "%s = token.Prefix('%s', escape=%s)" % (ttype.token_id, ttype.text, ttype.escape)

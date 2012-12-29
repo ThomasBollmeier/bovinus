@@ -94,14 +94,29 @@ class KeywordNode(TokenNode):
         
 class WordNode(TokenNode):
     
-    def __init__(self, token_id, pattern):
+    def __init__(self, token_id, pattern, propertiesNode=None):
         
         TokenNode.__init__(self, 'word', token_id)
         self.addChild(AstNode('pattern', pattern))
-
+        if propertiesNode:
+            self.addChild(propertiesNode)
+            
     def _get_text_node(self):
         
         return self.getChild('pattern')
+    
+    def _get_filter_callback(self):
+        
+        props = self.getChild('properties')
+        if props:
+            try:
+                return props.get_property('filter-callback')
+            except PropertyNotFound:
+                return ""
+        else:
+            return ""
+        
+    filter_callback = property(_get_filter_callback)
 
 class PrefixNode(TokenNode):
     
@@ -235,7 +250,8 @@ class Visitor(object):
 
     def visit_word(self, 
                    word_id, 
-                   pattern
+                   pattern,
+                   filter_callback
                    ):
         
         pass
@@ -396,7 +412,7 @@ class AstTraverser(object):
     
     def _walk_word(self, word, visitor):
         
-        visitor.visit_word(word.token_id, word.text_content)
+        visitor.visit_word(word.token_id, word.text_content, word.filter_callback)
         
     def _walk_prefix(self, prefix, visitor):
         
