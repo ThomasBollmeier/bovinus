@@ -52,7 +52,7 @@ class Tokenizer(object):
 
     def _split_at_sep(self, text, sep):
 
-        regex = sep.getRegex()
+        regex = sep.getRegexIgnoreWS()
 
         sep_positions = []
         for m in regex.finditer(text):

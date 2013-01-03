@@ -15,6 +15,9 @@
 # limitations under the License.
 
 import unittest
+import sys
+import os
+
 from bovinus.token import Literal, Word, Separator
 from bovinus.lexer import Lexer
 from bovinus.instream import StringInput
@@ -27,11 +30,11 @@ class LexerTest(unittest.TestCase):
         
         self._lexer.addTokenType(Literal.get())
         self._lexer.addTokenType(Word('[a-zA-Z_][a-zA-Z_0-9]*'))
-        self._lexer.addTokenType(Separator('.', whitespaceAllowed=False))
         self._lexer.addTokenType(Separator('('))
         self._lexer.addTokenType(Separator(')'))
         self._lexer.addTokenType(Separator(';'))
         self._lexer.addTokenType(Separator('+'))
+        self._lexer.addTokenType(Separator('.', whitespaceAllowed=False))
         
         self._lexer.enableLineComments('#')
         
@@ -54,7 +57,7 @@ class LexerTest(unittest.TestCase):
         self._print(code, tokens)
    
         self.assertIsNot(tokens, [])
-        self.assertIs(len(tokens), 6)
+        self.assertEqual(len(tokens), 6)
 
     def testSeparatorBetweenLiterals(self):
         
@@ -71,7 +74,27 @@ class LexerTest(unittest.TestCase):
         self._print(code, tokens)    
             
         self.assertIsNot(tokens, [])
-        self.assertIs(len(tokens), 4)
+        self.assertEqual(len(tokens), 4)
+        
+    def testNoWSAllowedSeperator(self):
+        
+        code = "person.getAddress().street"
+        self._lexer.setInputStream(StringInput(code))
+        
+        tokens = []
+        
+        token = self._lexer.getNextToken()
+        while token:
+            tokens.append(token)
+            token = self._lexer.getNextToken()
+
+        self._print(code, tokens)    
+            
+        self.assertIsNot(tokens, [])
+        self.assertEqual(len(tokens), 7)
+        
+        lastText = tokens[-1].getText()
+        self.assertEqual(lastText, "street")
         
     def _print(self, code, tokens):
 
@@ -85,5 +108,5 @@ class LexerTest(unittest.TestCase):
 #### Run tests #####
 
 if __name__ == "__main__":
-
+    
     unittest.main()

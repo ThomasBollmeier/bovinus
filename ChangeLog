@@ -1,0 +1,2 @@
+1.6.8:
+	- fixed tokenizer problem with separators that do not allow whitespace

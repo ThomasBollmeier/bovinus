@@ -262,6 +262,7 @@ class Separator(TokenType):
 
         res = Separator('')
         res._regex = re.compile(pattern)
+        res._regexIgnoreWS = res._regex
         res._len = len(pattern)
 
         return res
@@ -277,9 +278,13 @@ class Separator(TokenType):
 
         if whitespaceAllowed:
             regexStr = tmp
+            self._regex = re.compile(regexStr)
+            self._regexIgnoreWS = self._regex
         else:
             regexStr = "(?<=\S)" + tmp + "(?=\S)"
-        self._regex = re.compile(regexStr)
+            self._regex = re.compile(regexStr)
+            self._regexIgnoreWS = re.compile(tmp)
+            
         self._len = len(tokenText)
 
     def createToken(self, text):
@@ -294,6 +299,15 @@ class Separator(TokenType):
     def getRegex(self):
         
         return self._regex
+    
+    def getRegexIgnoreWS(self):
+        """
+        The tokenizer requires a regular expression
+        that does ignore the no-whitespace-allowed 
+        restriction. Otherwise the input stream may not 
+        be correctly split into tokens 
+        """
+        return self._regexIgnoreWS
 
 class AbstractInstantiationError(Exception):
     pass
