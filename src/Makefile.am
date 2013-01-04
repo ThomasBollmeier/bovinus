@@ -4,8 +4,7 @@ dist_bin_SCRIPTS = parser_gen/bovinus
 
 bovinusdir = $(pythondir)/bovinus
 
-bovinus_PYTHON = \
-	runtime/python/__init__.py \
+dist_bovinus_DATA = \
 	runtime/python/grammar.py \
 	runtime/python/input_buffer.py \
 	runtime/python/instream.py \
@@ -14,10 +13,13 @@ bovinus_PYTHON = \
 	runtime/python/token.py \
 	runtime/python/tokenizer.py \
 	runtime/python/util.py
+
+nodist_bovinus_DATA = \
+	runtime/python/__init__.py
 	
 parsergendir = $(bovinusdir)/parsergen
 
-parsergen_PYTHON = \
+dist_parsergen_DATA = \
 	parser_gen/__init__.py \
 	parser_gen/ast.py \
 	parser_gen/code_section_splitter.py \
