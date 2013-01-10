@@ -10,6 +10,7 @@ dist_bovinus_DATA = \
 	runtime/python/instream.py \
 	runtime/python/lexer.py \
 	runtime/python/parser.py \
+	runtime/python/position.py \
 	runtime/python/token.py \
 	runtime/python/tokenizer.py \
 	runtime/python/util.py
