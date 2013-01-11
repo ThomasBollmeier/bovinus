@@ -14,19 +14,23 @@ class Position(object):
     
     TABSIZE = 4
     
-    def __init__(self, line=0, numNonTabChars=0, numTabs=0):
+    def __init__(self, line=1, numNonTabChars=0, numTabs=0):
         
         self._line = line
         self._numNonTabChars = numNonTabChars
         self._numTabs = numTabs
         
-    def updateFromChar(self, char):
+    def clone(self):
         
-        if char == "\n":
+        return Position(self._line, self._numNonTabChars, self._numTabs)
+        
+    def updateFromChar(self, ch):
+        
+        if ch == "\n":
             self._line += 1
             self._numNonTabChars = 0
             self._numTabs = 0
-        elif char == "\t":
+        elif ch == "\t":
             self._numTabs += 1
         else:
             self._numNonTabChars += 1
@@ -35,10 +39,36 @@ class Position(object):
         
         return self._line
     
+    line = property(getLine)
+    
     def getColumn(self, tabSize=None):
         
         tsize = tabSize is not None and tabSize or Position.TABSIZE
 
-        return self._numNonTabChars + self._numTabs * tsize
+        return 1 + self._numNonTabChars + self._numTabs * tsize
     
+    column = property(getColumn)
     
+    def __lt__(self, other):
+        
+        return self.line < other.line or self.line == other.line and self.column < other.column
+
+    def __le__(self, other):
+        
+        return self.line < other.line or self.line == other.line and self.column <= other.column
+    
+    def __eq__(self, other):
+        
+        return self.line == other.line and self.column == other.column
+
+    def __ne__(self, other):
+        
+        return self.line != other.line or self.column != other.column
+
+    def __gt__(self, other):
+        
+        return self.line > other.line or self.line == other.line and self.column > other.column
+    
+    def __ge__(self, other):
+        
+        return self.line > other.line or self.line == other.line and self.column >= other.column

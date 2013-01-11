@@ -131,7 +131,7 @@ class Parser(object):
                 name = node.getName()
                 id_ = node.getId()
                 text = token and token.getText() or ''
-                current = AstNode(name, text, id_)
+                current = AstNode(name, text, id_, token)
 
             elif node.isRuleEnd():
 
@@ -152,7 +152,7 @@ class Parser(object):
 
                 id_ = node.getId()
                 text = token and token.getText() or ''
-                current.addChild(AstNode('token', text, id_))
+                current.addChild(AstNode('token', text, id_, token))
 
             else:
                 continue
@@ -468,18 +468,19 @@ class Context(object):
 
 class AstNode(object):
 
-    def __init__(self, name='', text='', identifier=''):
+    def __init__(self, name='', text='', identifier='', token=None):
 
         self._name = name
         self._text = text
         self._id = identifier
+        self._token = token
 
         self._parent = None
         self._children = []
 
     def copy(self):
 
-        res = AstNode(self._name, self._text, self._id)
+        res = AstNode(self._name, self._text, self._id, self._token)
         res._children = self._children
 
         return res
@@ -511,6 +512,10 @@ class AstNode(object):
     def getText(self):
 
         return self._text
+    
+    def getToken(self):
+        
+        return self._token
 
     def getParent(self):
 

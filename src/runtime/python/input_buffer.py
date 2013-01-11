@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .util import DynamicObject
+from .position import Position
             
 class InputBuffer(object):
 
@@ -24,8 +24,7 @@ class InputBuffer(object):
         self._fillSize = fillSize
         
         self._content = ""
-        self._line = 1
-        self._column = 0
+        self._position = Position()
             
     def setFillSize(self, newFillSize):
         
@@ -39,11 +38,7 @@ class InputBuffer(object):
 
     def getPositionInfo(self):
         
-        res = DynamicObject()
-        res.line = self._line
-        res.column = self._column
-        
-        return res
+        return self._position.clone()
     
     def consumeChar(self):
         
@@ -58,7 +53,7 @@ class InputBuffer(object):
                 
             self._fillContent()
             
-            self._updatePosInfo(ch)
+            self._position.updateFromChar(ch)
                 
             return ch
         
@@ -79,7 +74,7 @@ class InputBuffer(object):
             self._content = self._content[self._fillSize:]
         
         for ch in res:
-            self._updatePosInfo(ch)
+            self._position.updateFromChar(ch)
                 
         return res
 
@@ -89,11 +84,3 @@ class InputBuffer(object):
             if self._stream.endOfInput():
                 break
             self._content += self._stream.getNextChar()
-            
-    def _updatePosInfo(self, ch):
-        
-        if ch != "\n":
-            self._column += 1
-        else:
-            self._line += 1
-            self._column = 0
