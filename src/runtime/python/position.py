@@ -12,42 +12,111 @@
 
 class Position(object):
     
-    TABSIZE = 4
+    _TABSIZE = 4
     
-    def __init__(self, line=1, numNonTabChars=0, numTabs=0):
+    _NEW_LINE = 1
+    _TAB = 2
+    _OTHER_CHAR = 3
         
-        self._line = line
-        self._numNonTabChars = numNonTabChars
-        self._numTabs = numTabs
+    def __init__(self, charGroups=[]):
+        
+        self._charGrps = charGroups
+        self._cloned = False
         
     def clone(self):
         
-        return Position(self._line, self._numNonTabChars, self._numTabs)
+        res = Position(self._charGrps)
+        res._cloned = True
         
-    def updateFromChar(self, ch):
+        self._cloned = True
+        
+        return res
+    
+    @staticmethod
+    def setTabSize(tabsize):
+        
+        Position._TABSIZE = tabsize
+        
+    def forwardChar(self, ch):
+        
+        if self._cloned:
+            self._copyOnWrite()
+            self._cloned = False
         
         if ch == "\n":
-            self._line += 1
-            self._numNonTabChars = 0
-            self._numTabs = 0
+            catg = self._NEW_LINE
         elif ch == "\t":
-            self._numTabs += 1
+            catg = self._TAB
         else:
-            self._numNonTabChars += 1
+            catg = self._OTHER_CHAR
+            
+        if self._charGrps:
+            curGroup = self._charGrps[-1]
+            if curGroup[0] == catg:
+                curGroup[1] += 1
+            else:
+                self._charGrps.append([catg, 1])
+        else:
+            self._charGrps.append([catg, 1])
+            
+    def forward(self, text):
         
+        for ch in text:
+            self.forwardChar(ch)
+            
+    def backwardChar(self):
+
+        if self._cloned:
+            self._copyOnWrite()
+            self._cloned = False
+
+        if self._charGrps:
+            lastGrp = self._charGrps[-1]
+            lastGrp[1] -= 1
+            if lastGrp[1] == 0:
+                self._charGrps.pop()
+            
+    def backward(self, text):
+        
+        for _ in range(0, len(text)):
+            self.backwardChar()
+                    
     def getLine(self):
         
-        return self._line
-    
+        return 1 + sum([grp[1] for grp in self._charGrps if grp[0] == self._NEW_LINE])
+        
     line = property(getLine)
     
-    def getColumn(self, tabSize=None):
+    def getColumn(self):
         
-        tsize = tabSize is not None and tabSize or Position.TABSIZE
-
-        return 1 + self._numNonTabChars + self._numTabs * tsize
+        curLine = []
+        
+        for idx in range(len(self._charGrps), 0, -1):
+            grp = self._charGrps[idx-1]
+            if grp[0] != self._NEW_LINE:
+                curLine.insert(0, grp)
+            else:
+                break
+            
+        offset = 0
+        for grp in curLine:
+            if grp[0] == self._OTHER_CHAR:
+                offset += grp[1]
+            else:
+                for _ in range(0, grp[1]):
+                    offset = int(offset/self._TABSIZE + 1) * self._TABSIZE
+        
+        return 1 + offset
     
     column = property(getColumn)
+    
+    def _copyOnWrite(self):
+        
+        tmp = []
+        for grp in self._charGrps:
+            tmp.append(grp[:])
+            
+        self._charGrps = tmp
     
     def __lt__(self, other):
         

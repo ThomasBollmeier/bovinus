@@ -20,8 +20,13 @@ from .token import Keyword
 from .grammar import SuccessorError
 import os
 
-class Parser(object):
+class TreeCatg:
+    
+    PARSE_TREE = 1
+    AST = 2
 
+class Parser(object):
+    
     def __init__(self, grammar):
 
         self._grammar = grammar
@@ -45,11 +50,11 @@ class Parser(object):
 
         self._lexer.enableBlockComments(blockCommentStart, blockCommentEnd)
         
-    def enableFullBacktracking(self, fullBacktracking):
+    def enableFullBacktracking(self, fullBacktracking=True):
         
         self._fullBacktracking = fullBacktracking
 
-    def parse(self, inStream):
+    def parse(self, inStream, treeCatg=TreeCatg.AST):
 
         self._lexer.setInputStream(inStream)
         self._tokenBuffer = []
@@ -87,7 +92,7 @@ class Parser(object):
                     error = True
 
         if not error:
-            return self._createAst(path)
+            return self._createAst(path, treeCatg)
         else:
             if self._tokenBuffer:
                 token = self._tokenBuffer[0]
@@ -97,21 +102,21 @@ class Parser(object):
             else:
                 raise Exception("Parsing error")
 
-    def parseFile(self, filePath):
+    def parseFile(self, filePath, treeCatg=TreeCatg.AST):
 
         self._curFile = filePath
 
-        res = self.parse(FileInput(filePath))
+        res = self.parse(FileInput(filePath), treeCatg)
 
         self._curFile = None
 
         return res
 
-    def parseString(self, string):
+    def parseString(self, string, treeCatg=TreeCatg.AST):
 
-        return self.parse(StringInput(string))
+        return self.parse(StringInput(string), treeCatg)
 
-    def _createAst(self, path):
+    def _createAst(self, path, treeCatg):
 
         stack = []
         current = None
@@ -135,11 +140,12 @@ class Parser(object):
 
             elif node.isRuleEnd():
 
-                # Ggf. Transformation. Dabei ID aus Regel bewahren:
-                tmp = current;
-                current = node.transform(current)
-                if current is not tmp:
-                    current.setId(tmp.getId())
+                if treeCatg == TreeCatg.AST:
+                    # Transform. Keep ID defined in rule.
+                    tmp = current;
+                    current = node.transform(current)
+                    if current is not tmp:
+                        current.setId(tmp.getId())
 
                 parent = stack and stack.pop() or None
                 if parent:
@@ -166,7 +172,7 @@ class Parser(object):
         while True:
 
             if path.getLength() < 2:
-                # Ursprünglichen Pfad wiederherstellen:
+                # Restore original path:
                 while removed:
                     elem = removed.pop()
                     token = elem.getToken()
@@ -278,7 +284,7 @@ class Parser(object):
             return False, path
 
         if not successors:
-            return True, path # Fertig!
+            return True, path # Done!
 
         for succ in successors:
 
@@ -319,7 +325,7 @@ class Path(object):
     def __init__(self):
 
         self._elements = []
-        self._envStack = [] # Stack der Umgebungen
+        self._envStack = [] # Stack of environments
 
     def push(self, grammarNode, token):
 

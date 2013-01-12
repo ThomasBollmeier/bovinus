@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bovinus.token import *
-from bovinus.grammar import Grammar, defineRule, expand, transform, tokenNode as tn, connector
-from bovinus.parser import AstNode
+from runtime.python.token import *
+from runtime.python.grammar import Grammar, defineRule, expand, transform, tokenNode as tn, connector
+from runtime.python.parser import AstNode
 
 token_types = []
 
@@ -59,11 +59,16 @@ def for_expand(start, end, context):
     .connect(tn(IN))\
     .connect(tn(ID, 'list'))\
     .connect(_hlp)
-
-    _hlp\
-    .connect(tn(BRACE_OPEN))\
-    .connect(tn(BRACE_CLOSE))\
-    .connect(end)
+    
+    _start = connector()
+    _end = connector()
+    
+    _hlp.connect(tn(BRACE_OPEN)).connect(_start)
+    
+    _start.connect(ForRule()).connect(_start)
+    _start.connect(_end)
+    
+    _end.connect(tn(BRACE_CLOSE)).connect(end)
 
 @transform(ForRule)
 def for_transform(astNode):

@@ -1,0 +1,6 @@
+foreach	order in orders {
+	forall items {}
+	foreach account in accounts {}
+}
+
+forall		items {}

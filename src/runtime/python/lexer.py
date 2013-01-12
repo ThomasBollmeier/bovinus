@@ -126,18 +126,17 @@ class Lexer(object):
 
         if hlp:
             tokenStr = hlp.text
-            endLine = hlp.line
-            endColumn = hlp.column
+            endPos = hlp.position
         else: 
             return None
 
-        self._stack = self._getTokens(tokenStr, endLine, endColumn)
+        self._stack = self._getTokens(tokenStr, endPos)
         
         if self._stack:
             return self._stack.pop()
         else:
             msg = "Unknown token '" + tokenStr + "'";
-            msg += " at line " + endLine + ", column " + endColumn;
+            msg += " at line " + endPos.line + ", column " + endPos.column;
             raise Exception(msg)
   
     def _getNextChars(self):
@@ -151,10 +150,8 @@ class Lexer(object):
             if not content:
                 if self._consumed:
                     res = DynamicObject()
-                    pos = self._inputBuffer.getPositionInfo()
-                    res.line = pos.line
-                    res.column = pos.column
                     res.text = self._consumed
+                    res.position = self._inputBuffer.getPositionInfo()
                 self._consumed = ""
                 break
 
@@ -262,10 +259,6 @@ class Lexer(object):
         
         if self._mode == LexerMode.NORMAL:
             
-            pos = self._inputBuffer.getPositionInfo()
-            line = pos.line
-            column = pos.column
-            
             lenToConsume = 0
             if newMode == LexerMode.WSPACE:
                 lenToConsume = 1
@@ -274,14 +267,15 @@ class Lexer(object):
             elif newMode == LexerMode.BLOCK_COMMENT:
                 lenToConsume = len(self._blockCommentStart)
                 
+            savedPos = self._inputBuffer.getPositionInfo()
+                
             for dummy in range(0, lenToConsume):
                 self._inputBuffer.consumeChar()
             
             if self._consumed:
                 res = DynamicObject()
-                res.line = line
-                res.column = column
                 res.text = self._consumed
+                res.position = savedPos
 
             self._consumed = ""
             
@@ -347,7 +341,7 @@ class Lexer(object):
             
             self._inputBuffer.consumeChar()
     
-    def _getTokens(self, text, endLine, endColumn):
+    def _getTokens(self, text, endPos):
         
         res = []
         
@@ -355,28 +349,34 @@ class Lexer(object):
         parts = self._tokenizer.split_at_separators(text)
         parts.reverse()
         
-        col_end = endColumn
+        curEndPos = endPos.clone() 
         
         for text_, sep in parts:
             if sep is not None:
                 token = Token(text_, [sep])
-                token.setStartPosition(endLine, col_end - len(text_) +1)
-                token.setEndPosition(endLine, col_end)
+                end = curEndPos.clone()
+                start = end.clone()
+                start.backward(text_)
+                token.setStartPosition(start)
+                token.setEndPosition(end)
                 res.append(token)
             else:
-                res += self._getNonSepTokens(text_, endLine, col_end)
-            col_end -= len(text_)
+                res += self._getNonSepTokens(text_, curEndPos)
+            curEndPos.backward(text_)
             
         return res
             
-    def _getNonSepTokens(self, text, endLine, endColumn):
+    def _getNonSepTokens(self, text, endPos):
                 
         # Handle literals:
         if self._literal:
             token = self._literal.createToken(text)
             if token:
-                token.setStartPosition(endLine, endColumn - len(text) + 1)
-                token.setEndPosition(endLine, endColumn)
+                end = endPos.clone()
+                start = end.clone()
+                start.backward(text)
+                token.setStartPosition(start)
+                token.setEndPosition(end)
                 return [token]
 
         res = []
@@ -391,11 +391,14 @@ class Lexer(object):
                 right = prefix.getRemainingRight(text) or ""
 
                 if right:
-                    res = self._getTokens(right, endLine, endColumn)
+                    res = self._getTokens(right, endPos)
 
-                col = endColumn - len(right)
-                token.setStartPosition(endLine, col - len(token.getText()) + 1)
-                token.setEndPosition(endLine, col)
+                prefixEnd = endPos.clone()
+                prefixEnd.backward(right)
+                prefixStart = prefixEnd.clone()
+                prefixStart.backward(token.getText())
+                token.setStartPosition(prefixStart)
+                token.setEndPosition(prefixEnd)
                 
                 res.append(token)
 
@@ -410,13 +413,16 @@ class Lexer(object):
                 
                 left = postfix.getRemainingLeft(text) or ""
                 
-                token.setStartPosition(endLine, endColumn - len(token.getText()) + 1)
-                token.setEndPosition(endLine, endColumn)
+                postfixEnd = endPos.clone()
+                postfixStart = postfixEnd.clone()
+                postfixStart.backward(left)
+                
+                token.setStartPosition(postfixStart)
+                token.setEndPosition(postfixEnd)
                 res = [token]
 
                 if left:
-                    col = endColumn - len(token.getText())
-                    res += self._getTokens(left, endLine, col)
+                    res += self._getTokens(left, postfixStart)
 
                 return res
 
@@ -441,12 +447,17 @@ class Lexer(object):
         if matchingWords:
             
             token = Token(text, matchingWords)
-            token.setStartPosition(endLine, endColumn - len(text) + 1)
-            token.setEndPosition(endLine, endColumn)
+            
+            wordEnd = endPos.clone()
+            wordStart = wordEnd.clone()
+            wordStart.backward(text) 
+            
+            token.setStartPosition(wordStart)
+            token.setEndPosition(wordEnd)
             return [token]
 
         msg = "Unknown token '%s'" % text
-        msg += " ending at line %d, column %d" % (endLine, endColumn)
+        msg += " ending at line %d, column %d" % (endPos.line, endPos.column)
 
         raise Exception(msg)
 

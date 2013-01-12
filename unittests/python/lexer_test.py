@@ -18,9 +18,9 @@ import unittest
 import sys
 import os
 
-from bovinus.token import Literal, Word, Separator
-from bovinus.lexer import Lexer
-from bovinus.instream import StringInput
+from runtime.python.token import Literal, Word, Separator
+from runtime.python.lexer import Lexer
+from runtime.python.instream import StringInput
 
 class LexerTest(unittest.TestCase):
 

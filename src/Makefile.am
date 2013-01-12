@@ -34,7 +34,8 @@ dist_parsergen_DATA = \
 	parser_gen/python_codegen.py
 
 EXTRA_DIST = \
-	runtime/python/__init__.py.in
+	runtime/python/__init__.py.in \
+	runtime/__init__.py
 
 uninstall-local:
 	-rm -rf $(bovinusdir)

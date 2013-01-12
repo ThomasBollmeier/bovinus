@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import re
+from .position import Position
 
 class Token(object):
 
@@ -22,10 +23,8 @@ class Token(object):
 
         self._text = text
         self._types = types
-        self._lineStart = 0
-        self._columnStart = 0
-        self._lineEnd = 0
-        self._columnEnd = 0
+        self._start = Position()
+        self._end = Position()
 
     def getText(self):
 
@@ -39,23 +38,21 @@ class Token(object):
 
         return self._types
 
-    def setStartPosition(self, line, column):
+    def setStartPosition(self, pos):
 
-        self._lineStart = line
-        self._columnStart = column
+        self._start = pos
 
     def getStartPosition(self):
 
-        return self._lineStart, self._columnStart
+        return self._start.line, self._start.column
     
-    def setEndPosition(self, line, column):
+    def setEndPosition(self, pos):
         
-        self._lineEnd = line
-        self._columnEnd = column
+        self._end = pos
         
     def getEndPosition(self):
         
-        return self._lineEnd, self._columnEnd
+        return self._end.line, self._end.column
 
 class TokenType(object):
 

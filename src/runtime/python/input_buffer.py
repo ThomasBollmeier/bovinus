@@ -53,7 +53,7 @@ class InputBuffer(object):
                 
             self._fillContent()
             
-            self._position.updateFromChar(ch)
+            self._position.forwardChar(ch)
                 
             return ch
         
@@ -74,7 +74,7 @@ class InputBuffer(object):
             self._content = self._content[self._fillSize:]
         
         for ch in res:
-            self._position.updateFromChar(ch)
+            self._position.forwardChar(ch)
                 
         return res
 
