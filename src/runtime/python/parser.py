@@ -53,8 +53,49 @@ class Parser(object):
     def enableFullBacktracking(self, fullBacktracking=True):
         
         self._fullBacktracking = fullBacktracking
+        
+    def getTokenInfo(self, inStream):
+        """
+        Returns tuple list of matched token type and token
+        """
+        tokenInfo = []
+        
+        path = self._getPath(inStream)
+        
+        for pathElem in path:
+            token = pathElem.getToken()
+            if token:
+                tokenInfo.append((pathElem.getMatchedTokenType(), token))
+        
+        return tokenInfo
+    
+    def getTokenInfoFromFile(self, filePath):
+        
+        return self.getTokenInfo(FileInput(filePath))
+    
+    def getTokenInfoFromString(self, string):
+        
+        return self.getTokenInfo(StringInput(string))
 
     def parse(self, inStream, treeCatg=TreeCatg.AST):
+
+        return self._createAst(self._getPath(inStream), treeCatg)
+
+    def parseFile(self, filePath, treeCatg=TreeCatg.AST):
+
+        self._curFile = filePath
+
+        res = self.parse(FileInput(filePath), treeCatg)
+
+        self._curFile = None
+
+        return res
+
+    def parseString(self, string, treeCatg=TreeCatg.AST):
+
+        return self.parse(StringInput(string), treeCatg)
+
+    def _getPath(self, inStream):
 
         self._lexer.setInputStream(inStream)
         self._tokenBuffer = []
@@ -92,7 +133,7 @@ class Parser(object):
                     error = True
 
         if not error:
-            return self._createAst(path, treeCatg)
+            return path
         else:
             if self._tokenBuffer:
                 token = self._tokenBuffer[0]
@@ -101,20 +142,6 @@ class Parser(object):
                 raise ParseError(self._curFile, line, column, text)
             else:
                 raise Exception("Parsing error")
-
-    def parseFile(self, filePath, treeCatg=TreeCatg.AST):
-
-        self._curFile = filePath
-
-        res = self.parse(FileInput(filePath), treeCatg)
-
-        self._curFile = None
-
-        return res
-
-    def parseString(self, string, treeCatg=TreeCatg.AST):
-
-        return self.parse(StringInput(string), treeCatg)
 
     def _createAst(self, path, treeCatg):
 
@@ -435,7 +462,32 @@ class Path(object):
             res += "%d" % node.getTechnicalId()
 
         return res
-
+    
+    def __iter__(self):
+        
+        return PathIter(self)
+    
+class PathIter(object):
+    
+    def __init__(self, path):
+        
+        self._path = path
+        self._curIdx = 0
+        self._maxIdx = self._path.getLength() - 1
+        
+    def __iter__(self):
+        
+        return self
+        
+    def __next__(self):
+        
+        if self._curIdx <= self._maxIdx:
+            pathElement = self._path.getElement(self._curIdx)
+            self._curIdx += 1
+            return pathElement
+        else:
+            raise StopIteration
+            
 class Context(object):
 
     def __init__(self, path, token=None):

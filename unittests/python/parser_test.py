@@ -18,6 +18,7 @@ import unittest
 import os
 from runtime.python.parser import Parser, TreeCatg
 from runtime.python.position import Position
+from runtime.python.token import Keyword
 from grammar import TestGrammar
 
 class ParserTest(unittest.TestCase):
@@ -49,6 +50,20 @@ class ParserTest(unittest.TestCase):
         self._checkNode(for1.getChildren()[0], 1, 1, 1, 8)
         self._checkNode(for1.getChildren()[1], 1, 9, 1, 14)
         self._checkNode(for2.getChildren()[1], 6, 13, 6, 18)
+        
+    def testTokenInfo(self):
+        
+        filePath = os.path.abspath(os.path.dirname(__file__)) + os.sep + "testcode"
+        
+        tokenInfo = self._parser.getTokenInfoFromFile(filePath)
+        for tokenType, token in tokenInfo:
+            startLine, startCol = token.getStartPosition()
+            endLine, endCol = token.getEndPosition()
+            text = token.getText()
+            if not isinstance(tokenType, Keyword):
+                print("(%d,%d) - (%d,%d): '%s'" % (startLine, startCol, endLine, endCol, text))
+            else:
+                print("(%d,%d) - (%d,%d): '%s' (keyword)" % (startLine, startCol, endLine, endCol, text))
         
     def _checkNode(self, node, expStartLine, expStartCol, expEndLine, expEndCol):
 

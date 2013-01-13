@@ -18,9 +18,9 @@ class Position(object):
     _TAB = 2
     _OTHER_CHAR = 3
         
-    def __init__(self, charGroups=[]):
+    def __init__(self, charGroups=None):
         
-        self._charGrps = charGroups
+        self._charGrps = charGroups or []
         self._cloned = False
         
     def clone(self):
