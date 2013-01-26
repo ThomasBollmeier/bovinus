@@ -147,6 +147,8 @@ class PythonCodeGenerator(AbstractCodeGenerator):
             self._indent()
             self._add(res, "grammar.Rule.__init__(self, '%s', ident)" % rule.rule_id)
             self._add(res)
+            self._add(res, "self.setContextIndependent()")
+            self._add(res)
             self._dedent()
         else:
             self._add(res, "def __init__(self):")

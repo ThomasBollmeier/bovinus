@@ -75,6 +75,8 @@ class Rule(Connectable, Pluggable, GrammarElement):
         self._start = RuleStartNode(self, name, identifier)
         self._end = RuleEndNode(self)
         self._envVars = {}
+        
+        self._contextDependent = True
 
     def expand(self, start, end, context):
 
@@ -85,6 +87,14 @@ class Rule(Connectable, Pluggable, GrammarElement):
 
         return astNode
 
+    def dependsOnContext(self):
+        
+        return self._contextDependent 
+    
+    def setContextIndependent(self):
+        
+        self._contextDependent = False
+
     def getName(self):
 
         return self._start.getName()
@@ -92,7 +102,7 @@ class Rule(Connectable, Pluggable, GrammarElement):
     def onSuccRequested(self, start, end, context):
 
         self.expand(start, end, context)
-
+        
     def getEndNode(self):
 
         return self._end
@@ -412,8 +422,14 @@ class RuleStartNode(Node, IdNode):
         self._ruleAccess = ruleAccess
         self._name = name
         self._id = identifier
+        
+        self._start = None
 
     def getSuccessors(self, context):
+        
+        if not self._ruleAccess.dependsOnContext():
+            if self._start:
+                return [self._start]
 
         start = PlugNode(Node.TECHNICAL)
         end = PlugNode(Node.TECHNICAL)
@@ -421,6 +437,9 @@ class RuleStartNode(Node, IdNode):
         self._ruleAccess.onSuccRequested(start, end, context)
 
         end.connectTo(self._ruleAccess.getEndNode())
+        
+        if not self._ruleAccess.dependsOnContext():
+            self._start = start
 
         return [start]
 
@@ -540,6 +559,9 @@ class RuleInternalAccess(object):
         raise NotImplementedError
 
     def transform(self, astNode):
+        raise NotImplementedError
+    
+    def dependsOnContext(self):
         raise NotImplementedError
 
 class Multiplier(Connectable, Pluggable, GrammarElement):
