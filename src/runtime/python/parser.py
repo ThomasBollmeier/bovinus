@@ -535,29 +535,50 @@ class AstNode(object):
 
         self._parent = None
         self._children = []
+        self._children_d = {}
 
     def copy(self):
 
         res = AstNode(self._name, self._text, self._id, self._token)
         res._children = self._children
+        res._children_d = self._children_d
 
         return res
 
     def addChild(self, child):
 
         self._children.append(child)
+        
         child._parent = self
-
+        
+        if child._id:
+            self._updateIdMap(child)
+        
     def removeChildren(self):
 
         for child in self._children:
             child._parent = None
         self._children = []
+        self._children_d = {}
 
     def replaceChild(self, old, new):
 
         idx = self._children.index(old)
         self._children[idx] = new
+        
+        if old._id:
+            self._children_d[old._id].remove(old)
+        old._parent = None
+            
+        if new._id:
+            self._updateIdMap(new)
+        
+    def _updateIdMap(self, child):
+
+        try:
+            self._children_d[child._id].append(child)
+        except KeyError:
+            self._children_d[child._id] = [child]
 
     def setName(self, name):
 
@@ -596,8 +617,17 @@ class AstNode(object):
         return None
 
     def setId(self, identifier):
+        
+        if self._id == identifier:
+            return
+        
+        if self._id and self._parent:
+            self._parent._children_d[self._id].remove(self)
 
         self._id = identifier
+        
+        if self._parent:
+            self._parent._updateIdMap(self)
 
     def getId(self):
 
@@ -605,15 +635,17 @@ class AstNode(object):
 
     def getChildById(self, identifier):
 
-        for child in self._children:
-            if child._id == identifier:
-                return child
-
-        return None
-
+        try:
+            return self._children_d[identifier][0]
+        except KeyError:
+            return None
+        
     def getChildrenById(self, identifier):
-
-        return [c for c in self._children if c._id == identifier]
+        
+        try:
+            return self._children_d[identifier][:]
+        except KeyError:
+            return []
 
     def hasChildren(self):
 
