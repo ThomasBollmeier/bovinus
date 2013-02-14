@@ -184,6 +184,16 @@ class LiteralNode(TokenNode):
     def _get_text_node(self):
         
         return None
+    
+class TextBlockNode(TokenNode):
+    
+    def __init__(self, token_id):
+        
+        TokenNode.__init__(self, 'text-block', token_id)
+        
+    def _get_text_node(self):
+        
+        return None
         
 class RuleNode(AstNode):
     
@@ -285,6 +295,12 @@ class Visitor(object):
     def visit_literal(self, 
                       literal_id
                       ):
+        
+        pass
+    
+    def visit_text_block(self,
+                         text_block_id
+                         ):
         
         pass
     
@@ -402,6 +418,8 @@ class AstTraverser(object):
                 self._walk_separator(child, visitor)
             elif name == 'literal':
                 self._walk_literal(child, visitor)
+            elif name == 'text-block':
+                self._walk_text_block(child, visitor)
     
     def _walk_keyword(self, keyword, visitor):
         
@@ -435,6 +453,10 @@ class AstTraverser(object):
         
         visitor.visit_literal(literal.token_id)
         
+    def _walk_text_block(self, text_block, visitor):
+        
+        visitor.visit_text_block(text_block.token_id)
+    
     def _walk_rules(self, rules, visitor):
         
         for child in rules.getChildren():

@@ -1,0 +1,5 @@
+myinfo = """This is 
+a text that stretches itself
+over several lines.
+...
+"""

@@ -18,9 +18,9 @@ import unittest
 import sys
 import os
 
-from runtime.python.token import Literal, Word, Separator
+from runtime.python.token import Literal, Word, Separator, MultiLineLiteral
 from runtime.python.lexer import Lexer
-from runtime.python.instream import StringInput
+from runtime.python.instream import StringInput, FileInput
 
 class LexerTest(unittest.TestCase):
 
@@ -29,11 +29,13 @@ class LexerTest(unittest.TestCase):
         self._lexer = Lexer()
         
         self._lexer.addTokenType(Literal.get())
+        self._lexer.addTokenType(MultiLineLiteral.get())
         self._lexer.addTokenType(Word('[a-zA-Z_][a-zA-Z_0-9]*'))
         self._lexer.addTokenType(Separator('('))
         self._lexer.addTokenType(Separator(')'))
         self._lexer.addTokenType(Separator(';'))
         self._lexer.addTokenType(Separator('+'))
+        self._lexer.addTokenType(Separator('='))
         self._lexer.addTokenType(Separator('.', whitespaceAllowed=False))
         
         self._lexer.enableLineComments('#')
@@ -96,6 +98,17 @@ class LexerTest(unittest.TestCase):
         lastText = tokens[-1].getText()
         self.assertEqual(lastText, "street")
         
+    def testMultLineLiterals(self):
+        
+        print("Multi-Line-Literals:")
+        
+        self._lexer.setInputStream(FileInput("multi-line-lit.txt"))
+
+        token = self._lexer.getNextToken()
+        while token:
+            print(token.getText(), token.getTypes())
+            token = self._lexer.getNextToken()
+                
     def _print(self, code, tokens):
 
         print("code: %s" % code)

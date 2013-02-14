@@ -16,7 +16,7 @@
 
 from bovinus.parser import Parser
 from bovinus.parsergen.meta_grammar import MetaGrammar
-from bovinus.parsergen.ast import Visitor, AstTraverser, Multiplicity
+from bovinus.parsergen.ast import Visitor, AstTraverser
 import bovinus.parsergen.meta_objects as meta_obj
 
 class MetaParser(object):
@@ -331,7 +331,15 @@ class _AnalyseStep1(Visitor):
         obj = meta_obj.create_literal(literal_id)
         self._symbols[literal_id] = obj
         self._analyzer._token_types.append(obj)
-    
+        
+    def visit_text_block(self,
+                         text_block_id
+                         ):
+        
+        text_block = meta_obj.create_text_block(text_block_id)
+        self._symbols[text_block_id] = text_block
+        self._analyzer._token_types.append(text_block)
+
     def enter_rule(self,
                    rule_id,
                    is_grammar_root

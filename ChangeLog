@@ -1,2 +1,4 @@
+1.7.0:
+	- support for multi-line literals
 1.6.8:
 	- fixed tokenizer problem with separators that do not allow whitespace

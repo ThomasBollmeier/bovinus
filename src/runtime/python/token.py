@@ -185,7 +185,51 @@ class Literal(TokenType):
             return (first in Literal.DELIMITERS) and (text[-1] == first)
         else:
             return False
-
+        
+class MultiLineLiteral(TokenType):
+    
+    DELIMITER = '"""'
+    
+    _single = None
+    
+    @staticmethod
+    def get():
+        if not MultiLineLiteral._single:
+            MultiLineLiteral._single = MultiLineLiteral()
+        return MultiLineLiteral._single
+    
+    def __init__(self):
+        
+        TokenType.__init__(self)
+        
+        self._minLength = 2 * len(self.DELIMITER)
+        
+    def createToken(self, text):
+        
+        l = len(text)
+        
+        if l >= self._minLength:
+            start = text[:len(self.DELIMITER)]
+            end = text[-len(self.DELIMITER):]
+            if start == self.DELIMITER and end == self.DELIMITER:
+                return Token(text, [self])
+            else:
+                return None
+        else:
+            return None
+        
+    @staticmethod
+    def isMultiLineLiteral(text):
+        
+        delimLen = len(MultiLineLiteral.DELIMITER)
+        
+        if len(text) >= 2 * delimLen:
+            start = text[:delimLen]
+            end = text[-delimLen:]
+            return start == MultiLineLiteral.DELIMITER and end == MultiLineLiteral.DELIMITER
+        else:
+            return False
+        
 class Prefix(TokenType):
 
     def __init__(self, tokenText, escape=True):

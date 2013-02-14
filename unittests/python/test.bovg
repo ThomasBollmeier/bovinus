@@ -6,15 +6,15 @@ line-comment-style '//';
 block-comment-style '/*' '*/';
 
 word ID '[a-zA-Z_][a-zA-Z_0-9]*';
-word FUNCNAME '[a-zA-Z_][a-zA-Z_0-9]*' { filter-callback: funcname_is_no_keyword }
+word FUNCNAME '[a-zA-Z_][a-zA-Z_0-9]*';
 separator BRACE_OPEN '{';
 separator BRACE_CLOSE '}';
 separator PAR_OPEN '(';
 separator PAR_CLOSE ')';
 separator SEMICOLON ';';
-separator COLON ':(?=[^:]*)' { is-pattern: TRUE }
+separator COLON ':';
 separator COMMA ',';
-separator PACKAGE_SEP '::' { whitespace-allowed: FALSE }
+separator PACKAGE_SEP '::';
 literal LITERAL;
 
 @grammar

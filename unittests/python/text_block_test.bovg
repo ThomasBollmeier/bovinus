@@ -1,0 +1,14 @@
+<!-- grammar with text block support -->
+
+line-comment-style '#';
+
+word ID '[a-zA-Z_][a-zA-Z_0-9]*';
+literal LIT;
+text-block TEXT;
+separator ASSIGN '=';
+separator SEMICOLON ';';
+
+@grammar
+textblock = vardef*;
+
+vardef = 'var' name=ID ( ASSIGN ( lit=LIT | text=TEXT ) )? SEMICOLON; 

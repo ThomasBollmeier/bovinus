@@ -119,6 +119,9 @@ class PythonCodeGenerator(AbstractCodeGenerator):
         elif ttype.token_type == TokenType.LITERAL:
             line = "%s = token.Literal.get()" % ttype.token_id
             self._add(res, line)
+        elif ttype.token_type == TokenType.TEXT_BLOCK:
+            line = "%s = token.MultiLineLiteral.get()" % ttype.token_id
+            self._add(res, line)
         else:
             raise Exception("Unknown token type")
         

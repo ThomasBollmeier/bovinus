@@ -74,6 +74,10 @@ def create_literal(token_id):
     
     return res
 
+def create_text_block(token_id):
+    
+    return TokenType(TokenType.TEXT_BLOCK, token_id, "")
+
 class TokenType(object):
     
     KEYWORD = 1
@@ -82,6 +86,7 @@ class TokenType(object):
     PREFIX = 4
     POSTFIX = 5
     LITERAL = 6
+    TEXT_BLOCK = 7
     
     def __init__(self,
                  token_type, 

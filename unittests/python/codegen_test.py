@@ -65,7 +65,7 @@ class CodeGenTest(unittest.TestCase):
         CodeWriter(symbols, codegen).write(output)
         output.close_file()
         
-        from .godl_parser import GodlParser
+        from godl_parser import GodlParser
         
         parser = GodlParser()
         
@@ -101,6 +101,48 @@ package demo {
         
         print(ast.toXml())
         
+    def testPythonRT_2(self):
+        
+        symbols = self._parser.compile_file("text_block_test.bovg")
+        
+        self.assertIsNotNone(symbols)
+        
+        self._generated_file = "demo_parser.py"
+        
+        codegen = PythonCodeGenerator()
+        
+        output = FileOut(self._generated_file)
+        
+        output.open_file()
+        CodeWriter(symbols, codegen).write(output)
+        output.close_file()
+        
+        from demo_parser import TextblockParser
+        
+        parser = TextblockParser()
+        
+        self.assertIsNotNone(parser)
+        
+        code = '''
+# Test
+var hello;
+var world = 'World';
+var text = """
+This is a long
+text block. It
+stretches over 
+several lines...""";
+'''
+        
+        try:
+            ast = parser.parseString(code)
+        except Exception as error:
+            self.fail(str(error))
+            
+        self.assertIsNotNone(ast)
+        
+        print(ast.toXml())
+    
     def testJavaScriptCode(self):
         
         symbols = self._parser.compile_file(TEST_GRAMMAR_FILE)

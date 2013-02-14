@@ -34,7 +34,7 @@ expand, transform, tokenNode as tn, connector, fork, zeroToMany, \
 zeroToOne, oneToMany, sequence
 from bovinus.parser import AstNode
 from bovinus.parsergen.ast import PropertiesNode, KeywordNode, WordNode, PrefixNode, \
-PostfixNode, SeparatorNode, LiteralNode, RuleNode, Multiplicity
+PostfixNode, SeparatorNode, LiteralNode, RuleNode, Multiplicity, TextBlockNode
 
 token_types = []
 
@@ -71,6 +71,7 @@ SEPARATOR = register_keyword("separator")
 PREFIX = register_keyword("prefix")
 POSTFIX = register_keyword("postfix")
 LITERAL = register_keyword("literal")
+TEXT_BLOCK = register_keyword("text-block")
 LINE_COMMENT_STYLE = register_keyword("line-comment-style")
 BLOCK_COMMENT_STYLE = register_keyword("block-comment-style")
 COMMENT_VALUE = Literal.get()
@@ -233,7 +234,8 @@ class _TokenRule(Rule):
                 PREFIX : 'prefix',
                 POSTFIX : 'postfix',
                 SEPARATOR : 'separator',
-                LITERAL : 'literal'
+                LITERAL : 'literal',
+                TEXT_BLOCK: 'text'
                 }[token_type]
         
         Rule.__init__(self, name, identifier)
@@ -250,7 +252,7 @@ class _TokenRule(Rule):
         .connect(tn(TOKEN_ID, "id"))\
         .connect(end_)
         
-        if not self._token_type == LITERAL:
+        if not self._token_type in [LITERAL, TEXT_BLOCK]:
             end_ = end_.connect(tn(TOKEN_VALUE, "value"))
         
         if self._token_type in [KEYWORD, WORD, PREFIX, POSTFIX, SEPARATOR]:
@@ -285,7 +287,9 @@ class _TokenRule(Rule):
             res = SeparatorNode(token_id, value, propertiesNode)
         elif self._token_type == LITERAL:
             res = LiteralNode(token_id)
-        
+        elif self._token_type == TEXT_BLOCK:
+            res = TextBlockNode(token_id)
+            
         return res
     
 _TokensRule = defineRule("tokens")
@@ -299,7 +303,8 @@ def _tokens_expand(start, end, context):
                        _TokenRule(PREFIX),
                        _TokenRule(POSTFIX),
                        _TokenRule(SEPARATOR),
-                       _TokenRule(LITERAL)
+                       _TokenRule(LITERAL),
+                       _TokenRule(TEXT_BLOCK)
                        )).connect(end)
                        
 _MultRule = defineRule("mult")
