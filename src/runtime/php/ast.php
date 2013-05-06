@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright 2012 Thomas Bollmeier <tbollmeier@web.de>
+ * Copyright 2012-2013 Thomas Bollmeier <tbollmeier@web.de>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,11 @@ class Bovinus_AstNode {
 
         array_push($this->children, $child);
         $child->parent = $this;
+        
+        if ($child->identifier != '') {
+			$this->addChildToIndex($child);
+		}
+			        
     }
 
     public function removeChildren() {
@@ -49,6 +54,7 @@ class Bovinus_AstNode {
         }
 
         $this->children = array();
+        $this->childrenIndex = array();
     }
 
     public function replaceChild($old, $new) {
@@ -57,8 +63,14 @@ class Bovinus_AstNode {
 
             if ($this->children[$i] == $old) {
                 $old->parent = null;
+                if ($old->identifier != '') {
+					$this->removeChildFromIndex($old);
+				}
                 $new->parent = $this;
                 $this->children[$i] = $new;
+                if ($new->identifier != '') {
+					$this->addChildToIndex($new);
+				}
                 break;
             }
         }
@@ -114,8 +126,19 @@ class Bovinus_AstNode {
     }
 
     public function setId($identifier) {
+		
+		if ($this->identifier == $identifier) return;
+		
+		if ($this->parent != null) {
+			$this->parent->removeChildFromIndex($this);
+		}
 
         $this->identifier = $identifier;
+
+		if ($this->parent != null) {
+			$this->parent->addChildToIndex($child);
+		}
+
     }
 
     public function getId() {
@@ -124,27 +147,24 @@ class Bovinus_AstNode {
     }
 
     public function getChildById($identifier) {
-
-        foreach ($this->children as $child) {
-            if ($child->identifier == $identifier) {
-                return $child;
-            }
-        }
-
-        return null;
+		
+		if (array_key_exists($identifier, $this->childrenIndex)) {
+			$children = $this->childrenIndex[$identifier];
+			return $children[0];
+		} else {
+			return null;
+		}
+	
     }
 
     public function getChildrenById($identifier) {
 
-        $children = array();
+		if (array_key_exists($identifier, $this->childrenIndex)) {
+			return $this->childrenIndex[$identifier];
+		} else {
+			return array();
+		}
 
-        foreach ($this->children as $child) {
-            if ($child->identifier == $identifier) {
-                array_push($children, $child);
-            }
-        }
-
-        return $children;
     }
     
     public function getChildAccess() {
@@ -235,12 +255,54 @@ class Bovinus_AstNode {
 		return $res;
 		
 	}
+	
+	private function addChildToIndex($child) {
+	
+		if ($child->identifier == '') return;
+		
+		if (!array_key_exists($child->identifier, $this->childrenIndex)) {
+			$this->childrenIndex[$child->identifier] = array($child);
+		} else {
+			$values = $this->childrenIndex[$child->identifier];
+			array_push($values, $child);
+		}
+		
+	}
+	
+	private function removeChildFromIndex($child) {
+	
+		if ($child->identifier == '' || !array_key_exists($child->identifier, $this->childrenIndex)) {
+			// Nothing to do
+			return;
+		}		
+		
+		$children = $this->childrenIndex[$child->identifier];
+		$idx = 0;
+		$changed = FALSE;
+		foreach ($children as $c) {
+			if ($c == $child) {
+				unset($children[$idx]);
+				$changed = TRUE;
+			}
+			$idx++;
+		}
+		
+		if (!$changed) return;
+		
+		if (count($children) > 0) {
+			$this->childrenIndex[$child->identifier] = array_values($children);
+		} else {
+			unset($this->childrenIndex[$child->identifier]);
+		}
+	
+	}
     
     private $name;
     private $text;
     private $identifier;
     private $parent = null;
     private $children = array();
+    private $childrenIndex = array();
 
 }
 
