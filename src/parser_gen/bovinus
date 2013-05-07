@@ -20,7 +20,7 @@ Create a parser module from file input
 """
 
 import sys
-from optparse import OptionParser
+from argparse import ArgumentParser
 import bovinus 
 from bovinus.parsergen.meta_parser import MetaParser
 from bovinus.parsergen.output import StdOut, FileOut, CodeWriter
@@ -29,63 +29,71 @@ from bovinus.parsergen.js_codegen import JSCodeGenerator
 from bovinus.parsergen.php_codegen import PHPCodeGenerator
 from bovinus.parsergen.code_section_splitter import CodeSectionSplitter
 
-def create_option_parser():
-    
-    res = OptionParser(usage = "usage: %prog [options] <grammar_file>", 
-                       version = "%%prog, Version: %s, Author: Thomas Bollmeier" % bovinus.VERSION
-                       )
-    
-    res.add_option("-o", "--output",
-                   dest = "parser_file",
-                   default = "",
-                   metavar = "PARSER_FILE",
-                   help = "write generated parser code to PARSER_FILE"
-                   )
+def create_argument_parser():
 
-    res.add_option("-t", "--target",
-                   dest = "target_language",
-                   default = "python",
-                   metavar = "TARGET_LANG",
-                   help = "generate in language TARGET_LANG [possible values: python(default), javascript, php]"
-                   )
+    res = ArgumentParser(
+      description = "A simple parser generator.",
+      )
 
-    res.add_option("", "--header-comment",
-                   dest = "header_comment",
-                   default = "",
-                   metavar = "HEADER_COMMENT_FILE",
-                   help = "add content of HEADER_COMMENT_FILE as header comment to the generated code"
-                   )
-    
-    res.add_option("", "--prefix-php",
-                   dest = "prefix_php",
-                   default = "",
-                   metavar = "PREFIX",
-                   help = "set prefix of generated PHP objects to PREFIX"
-                   )
-    
+    res.add_argument("grammar_file",
+      help = "grammar file as input for bovinus"
+      )
+
+    res.add_argument("--version", 
+      action = "version",
+      version = "bovinus, Version: %s, (c) 2013 Thomas Bollmeier" % bovinus.VERSION
+      )
+
+    res.add_argument("-o", "--output",
+      dest = "parser_file",
+      default = "",
+      metavar = "PARSER_FILE",
+      help = "write generated parser code to PARSER_FILE"
+      )
+
+    res.add_argument("-t", "--target",
+      dest = "target_language",
+      default = "python",
+      metavar = "TARGET_LANG",
+      help = "generate in language TARGET_LANG [possible values: python(default), javascript, php]"
+      )
+
+    res.add_argument("--header-comment",
+      dest = "header_comment",
+      default = "",
+      metavar = "HEADER_COMMENT_FILE",
+      help = "add content of HEADER_COMMENT_FILE as header comment to the generated code"
+      )
+
+    res.add_argument("--prefix-php",
+      dest = "prefix_php",
+      default = "",
+      metavar = "PREFIX",
+      help = "set prefix of generated PHP objects to PREFIX"
+      )
+
     return res
 
-options, args = create_option_parser().parse_args()
-
+args = create_argument_parser().parse_args()
 if not args:
     print("Invalid syntax. Call '%s --help' for further information" % sys.argv[0])
     exit(1)
     
-grammar_file = args[0]
+grammar_file = args.grammar_file
 
-if options.target_language == "python":
+if args.target_language == "python":
     generator = PythonCodeGenerator()
-elif options.target_language == "javascript":
+elif args.target_language == "javascript":
     generator = JSCodeGenerator()
-elif options.target_language == "php":
-    generator = PHPCodeGenerator(prefix=options.prefix_php)
+elif args.target_language == "php":
+    generator = PHPCodeGenerator(prefix=args.prefix_php)
 else:
-    print("Target language '%s' is not supported" % options.target_language)
+    print("Target language '%s' is not supported" % args.target_language)
     exit(1)
     
 comment_lines = []
-if options.header_comment:
-    f = open(options.header_comment, "r")
+if args.header_comment:
+    f = open(args.header_comment, "r")
     comment_lines = [line.rstrip() for line in f.readlines()]
     f.close()
 
@@ -95,10 +103,10 @@ grammar_string, code_sections = section_splitter.split_grammar_file(grammar_file
 
 symbols = MetaParser().compile_string(grammar_string)
 
-if options.parser_file:
+if args.parser_file:
     # Keep editable sections:
-    generator.init_editable_sections(options.parser_file)
-    output = FileOut(options.parser_file)
+    generator.init_editable_sections(args.parser_file)
+    output = FileOut(args.parser_file)
     output.open_file()
 else:
     output = StdOut()
@@ -111,7 +119,7 @@ if comment_lines:
 
 CodeWriter(symbols, generator).write(output)
 
-if options.parser_file:
+if args.parser_file:
     output.close_file()
     
 exit(0)
