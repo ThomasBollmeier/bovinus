@@ -263,8 +263,7 @@ class Bovinus_AstNode {
 		if (!array_key_exists($child->identifier, $this->childrenIndex)) {
 			$this->childrenIndex[$child->identifier] = array($child);
 		} else {
-			$values = $this->childrenIndex[$child->identifier];
-			array_push($values, $child);
+			array_push($this->childrenIndex[$child->identifier], $child);
 		}
 		
 	}
@@ -280,7 +279,7 @@ class Bovinus_AstNode {
 		$idx = 0;
 		$changed = FALSE;
 		foreach ($children as $c) {
-			if ($c == $child) {
+			if ($c === $child) {
 				unset($children[$idx]);
 				$changed = TRUE;
 			}
