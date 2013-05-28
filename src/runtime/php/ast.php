@@ -136,7 +136,7 @@ class Bovinus_AstNode {
         $this->identifier = $identifier;
 
 		if ($this->parent != null) {
-			$this->parent->addChildToIndex($child);
+			$this->parent->addChildToIndex($this);
 		}
 
     }
