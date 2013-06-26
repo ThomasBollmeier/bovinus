@@ -268,7 +268,7 @@ class Bovinus_PlugNode extends Bovinus_Node implements Bovinus_Pluggable, Bovinu
 
     public function connectTo($socket) {
 
-        if (!array_search($socket, $this->successors)) {
+        if (array_search($socket, $this->successors, TRUE) === FALSE) {
             array_push($this->successors, $socket);
         }
     }
