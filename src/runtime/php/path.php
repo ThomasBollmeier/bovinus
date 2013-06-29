@@ -161,7 +161,3 @@ class Bovinus_Path {
     private $envStack; // stack of environments  
 
 }
-?>
-
-
-

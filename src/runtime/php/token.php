@@ -368,5 +368,3 @@ class Bovinus_Separator extends Bovinus_TokenType {
     private $_regex;
 
 }
-
-?>

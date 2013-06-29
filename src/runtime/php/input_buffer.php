@@ -134,5 +134,3 @@ class Bovinus_PositionInfo {
     }
 
 }
-
-?>

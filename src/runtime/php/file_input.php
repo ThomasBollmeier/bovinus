@@ -74,5 +74,3 @@ class Bovinus_FileInput implements Bovinus_InStream {
     private $endOfFile = false;
 
 }
-
-?>

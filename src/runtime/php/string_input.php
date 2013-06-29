@@ -45,5 +45,3 @@ class Bovinus_StringInput implements Bovinus_InStream {
     private $idx;
 
 }
-
-?>

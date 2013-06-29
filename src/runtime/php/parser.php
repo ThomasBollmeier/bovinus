@@ -413,7 +413,3 @@ class Bovinus_ParseError extends Exception {
     }
 
 }
-?>
-
-
-

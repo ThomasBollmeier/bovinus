@@ -613,5 +613,3 @@ class Bovinus_CharInfo {
     public $column;
 
 }
-
-?>

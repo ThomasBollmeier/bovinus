@@ -23,5 +23,3 @@ interface Bovinus_InStream {
 
     function endOfInput();
 }
-
-?>

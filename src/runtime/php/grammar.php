@@ -593,5 +593,3 @@ interface Bovinus_ConditionChecker {
 
     function isFulfilled($context);
 }
-
-?>

@@ -335,5 +335,3 @@ class Bovinus_AstNodeChildAccess {
 	
 	private $astNode;
 }
-
-?>

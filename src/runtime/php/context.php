@@ -61,7 +61,3 @@ class Bovinus_Context {
     private $token;
 
 }
-?>
-
-
-
