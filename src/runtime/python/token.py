@@ -53,6 +53,21 @@ class Token(object):
     def getEndPosition(self):
         
         return self._end.line, self._end.column
+    
+    def __str__(self):
+        
+        type_info = ""
+        for tokenType in self._types:
+            if type_info:
+                type_info += ", "
+            if not tokenType.name:
+                type_info += "{ id: %s}" % tokenType.getId()
+            else:
+                type_info += "{ id: %s, name: %s}" % \
+                             (tokenType.getId(), tokenType.name)
+            type_info = "[%s]" % type_info
+        
+        return self._text + " : " + type_info
 
 class TokenType(object):
 
@@ -65,6 +80,7 @@ class TokenType(object):
 
         TokenType.currentId += 1
         self._id = TokenType.currentId
+        self.name = ""
         self._len = 0
 
     def getId(self):

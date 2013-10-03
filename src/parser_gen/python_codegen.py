@@ -125,6 +125,9 @@ class PythonCodeGenerator(AbstractCodeGenerator):
         else:
             raise Exception("Unknown token type")
         
+        line = "%s.name = '%s'" % (ttype.token_id, ttype.token_id)
+        self._add(res, line)
+        
         self._add(res, "%s.append(%s)" % (self.VAR_ALL_TOKEN_TYPES, ttype.token_id))
         self._add(res)
         

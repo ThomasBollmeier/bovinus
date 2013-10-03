@@ -632,7 +632,11 @@ class AstNode(object):
     def getId(self):
 
         return self._id;
-
+    
+    def clearId(self):
+        
+        self._id = ""
+    
     def getChildById(self, identifier):
 
         try:
