@@ -357,7 +357,12 @@ class FileOut(AbstractOutput):
         
     def open_file(self):
         
-        self._file = open(self._file_path, "w")
+        try:
+            self._file = open(self._file_path, "w")
+        except FileNotFoundError:
+            gendir = os.path.abspath(os.path.dirname(self._file_path))
+            os.makedirs(gendir, mode=0o755)
+            self._file = open(self._file_path, "w")
                 
     def close_file(self):
         

@@ -1,3 +1,5 @@
+1.7.3:
+	- create non-existing directories during parser file generation 
 1.7.0:
 	- support for multi-line literals
 1.6.8:

@@ -55,6 +55,10 @@ class PHPCodeGenerator(AbstractCodeGenerator):
     def _create_top_section(self, symbols):
 
         res = []
+        self._insert_editable_section(res,
+                                      "namespace",
+                                      ["// Insert namespace definition here..."]
+                                      )
         self._add(res, "require_once 'Bovinus/parser.php';")
         self._add(res)
         self._insert_editable_section(res, "init")
