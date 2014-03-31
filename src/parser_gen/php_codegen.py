@@ -73,7 +73,7 @@ class PHPCodeGenerator(AbstractCodeGenerator):
         if self._prefix:
             parserClassName = self._prefix + "_" + parserClassName
         
-        self._add(res, "class %s_Parser extends Bovinus_Parser {" % parserClassName)
+        self._add(res, "class %s_Parser extends \Bovinus_Parser {" % parserClassName)
         self._add(res)
         
         self._indent()
@@ -118,30 +118,30 @@ class PHPCodeGenerator(AbstractCodeGenerator):
 
         if ttype.token_type == TokenType.KEYWORD:
             tmp = self._to_bool_str(ttype.case_sensitive)
-            line = "$%s = new Bovinus_Keyword('%s', %s);" % (name, ttype.text, tmp)
+            line = "$%s = new \Bovinus_Keyword('%s', %s);" % (name, ttype.text, tmp)
             self._add(res, line) 
         elif ttype.token_type == TokenType.WORD:
-            line = "$%s = new Bovinus_Word('%s');" % (name, ttype.text)
+            line = "$%s = new \Bovinus_Word('%s');" % (name, ttype.text)
             self._add(res, line)
         elif ttype.token_type == TokenType.PREFIX:
             tmp = self._to_bool_str(ttype.escape)
-            line = "$%s = new Bovinus_Prefix('%s', %s);" % (name, ttype.text, tmp)
+            line = "$%s = new \Bovinus_Prefix('%s', %s);" % (name, ttype.text, tmp)
             self._add(res, line)
         elif ttype.token_type == TokenType.POSTFIX:
             tmp = self._to_bool_str(ttype.escape)
-            line = "$%s = new Bovinus_Postfix('%s', %s);" % (name, ttype.text, tmp)
+            line = "$%s = new \Bovinus_Postfix('%s', %s);" % (name, ttype.text, tmp)
             self._add(res, line)
         elif ttype.token_type == TokenType.SEPARATOR:
             if not ttype.is_pattern:
                 ws_allowed = self._to_bool_str(ttype.whitespace_allowed)
                 escape = self._to_bool_str(ttype.escape)
-                line = "$%s = new Bovinus_Separator('%s', %s, %s);" % \
+                line = "$%s = new \Bovinus_Separator('%s', %s, %s);" % \
                 (name, ttype.text, ws_allowed, escape)
             else:
-                line = "$%s = Bovinus_Separator::create('%s');" % (name, ttype.text)
+                line = "$%s = \Bovinus_Separator::create('%s');" % (name, ttype.text)
             self._add(res, line)
         elif ttype.token_type == TokenType.LITERAL:
-            line = "$%s = Bovinus_Literal::get();" % name
+            line = "$%s = \Bovinus_Literal::get();" % name
             self._add(res, line)
         else:
             raise Exception("Unknown token type")
@@ -160,9 +160,9 @@ class PHPCodeGenerator(AbstractCodeGenerator):
         name = self._rule_class_name(rule)
         
         if not is_grammar:
-            self._add(res, "class %s extends Bovinus_Rule {" % name)
+            self._add(res, "class %s extends \Bovinus_Rule {" % name)
         else:
-            self._add(res, "class %s extends Bovinus_Grammar {" % name)
+            self._add(res, "class %s extends \Bovinus_Grammar {" % name)
         self._add(res)
 
         self._indent()
@@ -238,7 +238,7 @@ class PHPCodeGenerator(AbstractCodeGenerator):
             for subrule_name in subrule_names:
                 self._add(res, "array_push($elements, $this->%s());" % subrule_name)
             self._add(res)
-            self._add(res, "return new Bovinus_Sequence($elements);")
+            self._add(res, "return new \Bovinus_Sequence($elements);")
         else:
             self._add(res, "return $this->%s();" % subrule_names[0])
             
@@ -264,7 +264,7 @@ class PHPCodeGenerator(AbstractCodeGenerator):
             for subrule_name in subrule_names:
                 self._add(res, "array_push($branches, $this->%s());" % subrule_name)
             self._add(res)
-            result_str = "new Bovinus_Fork($branches)"
+            result_str = "new \Bovinus_Fork($branches)"
         else:
             result_str = "$this->%s()" % subrule_names[0]
             
