@@ -56,6 +56,7 @@ class AbstractCodeGenerator(object):
         self._header_comment_lines = []
         self._indent_level = 0
         self._sort_token_types = True
+        self._parser_class_name = ""
         
     def create_code(self, symbols):
         
@@ -86,6 +87,10 @@ class AbstractCodeGenerator(object):
     def set_header_comment(self, lines):
         
         self._header_comment_lines = lines
+        
+    def set_parser_class_name(self, name):
+		
+        self._parser_class_name = name
         
     def _enable_token_type_sorting(self, enable):
         

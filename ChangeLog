@@ -1,3 +1,5 @@
+1.7.5: 
+	- Allow user defined name of generated parser class
 1.7.3:
 	- create non-existing directories during parser file generation 
 1.7.0:

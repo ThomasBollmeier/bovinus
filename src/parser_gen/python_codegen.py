@@ -56,7 +56,12 @@ class PythonCodeGenerator(AbstractCodeGenerator):
         
         res = []
         
-        self._add(res, "class %sParser(parser.Parser):" % self._to_camel_case(grammar.rule_id))
+        if not self._parser_class_name:
+            parser_class_name = "{}Parser".format(self._to_camel_case(grammar.rule_id))
+        else:
+            parser_class_name = self._parser_class_name
+        
+        self._add(res, "class {}(parser.Parser):".format(parser_class_name))
         self._add(res)
         
         self._indent()

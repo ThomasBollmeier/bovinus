@@ -69,11 +69,16 @@ class PHPCodeGenerator(AbstractCodeGenerator):
         
         res = []
         
-        parserClassName = self._to_upcase_after_underscore(grammar.rule_id)
+        if not self._parser_class_name:
+            parser_class_name = self._to_upcase_after_underscore(grammar.rule_id) 
+            parser_class_name += "_Parser"
+        else:
+            parser_class_name = self._parser_class_name
+			
         if self._prefix:
-            parserClassName = self._prefix + "_" + parserClassName
+            parser_class_name = self._prefix + "_" + parser_class_name
         
-        self._add(res, "class %s_Parser extends \Bovinus_Parser {" % parserClassName)
+        self._add(res, "class {} extends \Bovinus_Parser {{".format(parser_class_name))
         self._add(res)
         
         self._indent()

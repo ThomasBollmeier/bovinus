@@ -71,6 +71,13 @@ def create_argument_parser():
       metavar = "PREFIX",
       help = "set prefix of generated PHP objects to PREFIX"
       )
+      
+    res.add_argument("--parser-name",
+		dest = "parser_name",
+		default = "",
+		metavar = "PARSER_NAME",
+		help = "set name of generated parser class to PARSER_NAME"
+		)
 
     return res
 
@@ -116,6 +123,9 @@ if code_sections:
     
 if comment_lines:
     generator.set_header_comment(comment_lines)
+    
+if args.parser_name:
+	generator.set_parser_class_name(args.parser_name)
 
 CodeWriter(symbols, generator).write(output)
 
