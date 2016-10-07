@@ -1,4 +1,4 @@
-AC_INIT(bovinus, 1.7.5)
+AC_INIT(bovinus, 1.7.6)
 
 AM_INIT_AUTOMAKE([1.11])
 

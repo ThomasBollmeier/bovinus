@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 #! coding=UTF-8
 
-# Copyright 2012 Thomas Bollmeier <tbollmeier@web.de>
+# Copyright 2012-2016 Thomas Bollmeier <tbollmeier@web.de>
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ def create_argument_parser():
 
     res.add_argument("--version", 
       action = "version",
-      version = "bovinus, Version: %s, (c) 2013 Thomas Bollmeier" % bovinus.VERSION
+      version = "bovinus, Version: %s, (c) 2013-2016 Thomas Bollmeier" % bovinus.VERSION
       )
 
     res.add_argument("-o", "--output",

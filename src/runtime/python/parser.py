@@ -655,6 +655,32 @@ class AstNode(object):
 
         return bool(self._children)
     
+    def reassignById(self, source, ident):
+        children = source.getChildrenById(ident)
+        self._reassign(children)
+            
+    def reassignContentById(self, source, ident, new_name=''):
+        children = source.getChildrenById(ident)
+        self._reassignContent(children, new_name)
+        
+    def reassignByName(self, source, name):
+        children = source.getChildrenByName(name)
+        self._reassign(children)
+
+    def reassignContentByName(self, source, name, new_name=''):
+        children = source.getChildrenByName(name)
+        self._reassignContent(children, new_name)
+        
+    def _reassign(self, nodes):
+        for node in nodes:
+            node.clearId()
+            self.addChild(node)
+            
+    def _reassignContent(self, nodes, new_name):
+        for node in nodes:
+            name = new_name or node.getName()
+            self.addChild(AstNode(name, node.getText()))
+    
     def toXml(self, indent=0):
         
         res = ""
